@@ -6,7 +6,7 @@ import 'package:proyek/models/schedule_model.dart';
 class ApiSchedule {
   final List schedule = [];
   static const baseUrl =
-      "https://backendtimeque-production-fdcf.up.railway.app";
+      "https://backendtimeque-production-fdcf.up.railway.app/schedule";
 
   static Future<void> AddSchedule(
     String title,
