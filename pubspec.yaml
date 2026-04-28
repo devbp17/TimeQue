@@ -1,0 +1,35 @@
+name: proyek
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8  # ✅ ini sudah benar
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8  # ✅ biarkan jika butuh
+  shared_preferences: ^2.2.2  # Tambahkan ini
+  firebase_core: ^4.4.0
+  http: ^1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0  # ✅ versi terbaru
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/background.png
+    - assets/grup.png
+    - assets/create.png
+    - assets/fonts/kastelovultra.otf  # ✅ CORRECT
+
+  fonts:
+    - family: KasteloVultra
+      fonts:
+        - asset: assets/fonts/kastelovultra.otf
+          weight: 700
