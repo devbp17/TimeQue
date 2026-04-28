@@ -62,7 +62,7 @@ class _addScheduleState extends State<addSchedule> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Schedule berhasil ditambahkan")),
                 );
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Error: $e")),

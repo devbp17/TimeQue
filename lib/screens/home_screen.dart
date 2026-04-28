@@ -18,7 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    schedule = ApiSchedule.getSchedule();
     fetchSchedule();
   }
 
@@ -90,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: data.length,
             itemBuilder: (context, index) {
               final schedule = data[index];
-              
+
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
@@ -147,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
 
-                if (result != null) {
+                if (result == true) {
                   await fetchSchedule();
                 }
               },
@@ -261,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
 
                 /// Refresh setelah create schedule
-                if (result != null) {
+                if (result == true) {
                   await fetchSchedule();
                 }
               },
