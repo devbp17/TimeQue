@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:proyek/screens/bottomNavbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
 import 'home_screen.dart'; // Untuk navigasi setelah login berhasil
@@ -48,7 +49,7 @@ class _LoginFormScreenState extends State<LoginFormScreen> {
         await Future.delayed(const Duration(seconds: 1));
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
+              MaterialPageRoute(builder: (context) => BottomNavbar()),
             );
         }
       }

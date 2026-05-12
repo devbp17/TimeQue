@@ -8,7 +8,7 @@ class ApiSchedule {
   static const baseUrl =
       "https://backendtimeque-production-fdcf.up.railway.app/schedule";
 
-  static Future<void> AddSchedule(
+  static Future<Scheduleuser> AddSchedule(
     String title,
     String description,
     DateTime date,
@@ -28,10 +28,12 @@ class ApiSchedule {
         "date": date.toIso8601String(),
       }),
     );
-
     if (res.statusCode != 201) {
       throw Exception("Failed to add schedule");
     }
+    final data = jsonDecode(res.body);
+    // Asumsikan API mengembalikan object Scheduleuser dengan id
+    return Scheduleuser.fromJson(data);
   }
 
   static Future<List<Scheduleuser>> getSchedule() async {
@@ -49,7 +51,7 @@ class ApiSchedule {
     if (res.statusCode == 200) {
       List data = json.decode(res.body);
 
-      return data.map((e) => Scheduleuser.fromjson(e)).toList();
+      return data.map((e) => Scheduleuser.fromJson(e)).toList();
     } else {
       throw Exception("Failed to load schedule");
     }

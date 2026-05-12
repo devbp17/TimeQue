@@ -11,7 +11,7 @@ class Scheduleuser {
     required this.date,
   });
 
-  factory Scheduleuser.fromjson(Map<String, dynamic> json) {
+  factory Scheduleuser.fromJson(Map<String, dynamic> json) {
     return Scheduleuser(
       id: json['_id'],
       title: json['title'],

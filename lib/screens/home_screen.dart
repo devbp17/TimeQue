@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:proyek/models/schedule_model.dart';
+import 'package:proyek/services/notification_service.dart';
 import 'package:proyek/services/schedule_service.dart';
 import '../utils/constants.dart';
 import 'schedule_create.dart';
+import 'package:fruit_cutting_game/main_router_game.dart';
+import 'package:flame/game.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   Future<List<Scheduleuser>>? schedule;
 
   @override
@@ -25,6 +27,11 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       schedule = ApiSchedule.getSchedule();
     });
+   /*  final data = await schedule;
+    if (data != null) {
+      await NotificationService.debugPendingNotifications();
+    }
+    NotificationService.showTestNotification();*/
   }
 
   @override
@@ -55,109 +62,122 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       body: FutureBuilder<List<Scheduleuser>>(
-  future: schedule,
-  builder: (context, snapshot) {
+        future: schedule,
+        builder: (context, snapshot) {
+          /// Loading
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    /// Loading
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+          /// Error
+          if (snapshot.hasError) {
+            return const Center(child: Text("Error loading schedules"));
+          }
 
-    /// Error
-    if (snapshot.hasError) {
-      return const Center(
-        child: Text("Error loading schedules"),
-      );
-    }
+          /// Jika tidak ada schedule
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return _buildEmptyState();
+          }
 
-    /// Jika tidak ada schedule
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return _buildEmptyState();
-    }
+          /// Jika ada schedule
+          final data = snapshot.data!;
 
-    /// Jika ada schedule
-    final data = snapshot.data!;
+          return Column(
+            children: [
+              /// ListView schedule (dibungkus Expanded)
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final schedule = data[index];
 
-    return Column(
-      children: [
-        /// ListView schedule (dibungkus Expanded)
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              final schedule = data[index];
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  title: Text(schedule.title),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(schedule.description),
-                      const SizedBox(height: 5),
-                      Text(
-                        "${schedule.date.day}/${schedule.date.month}/${schedule.date.year}",
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        title: Text(schedule.title),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(schedule.description),
+                            const SizedBox(height: 5),
+                            Text(
+                              "${schedule.date.day}/${schedule.date.month}/${schedule.date.year}",
+                            ),
+                            Text(
+                              "${schedule.date.hour}:${schedule.date.minute.toString().padLeft(2, '0')}",
+                            ),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () async {
+                            await ApiSchedule.deleteSchedule(schedule.id);
+                            await NotificationService.cancelNotification(
+                              schedule.id.hashCode,
+                            );
+                            await fetchSchedule();
+                          },
+                        ),
                       ),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () async {
-                      await ApiSchedule.deleteSchedule(schedule.id);
-                      await fetchSchedule();
+                    );
+                  },
+                ),
+              ),
+
+              /// Tombol-tombol di luar ListView
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              GameWidget(game: MainRouterGame()),
+                        ),
+                      );
                     },
+                    child: const Text("Find your Friends!"),
                   ),
                 ),
-              );
-            },
-          ),
-        ),
+              ),
 
-        /// Tombol-tombol di luar ListView
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Implement find friends
-              },
-              child: const Text("Find your Friends!"),
-            ),
-          ),
-        ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const addSchedule(),
+                        ),
+                      );
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: OutlinedButton(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const addSchedule(),
+                      if (result == true) {
+                        await fetchSchedule();
+                      }
+                    },
+                    child: const Text("Create your Schedule!"),
                   ),
-                );
-
-                if (result == true) {
-                  await fetchSchedule();
-                }
-              },
-              child: const Text("Create your Schedule!"),
-            ),
-          ),
-        ),
-      ],
-    );
-  },
-),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -168,7 +188,6 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-
           const SizedBox(height: 40),
 
           /// Gambar profil
@@ -178,10 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.grey300,
-              border: Border.all(
-                color: AppColors.white,
-                width: 4,
-              ),
+              border: Border.all(color: AppColors.white, width: 4),
               image: const DecorationImage(
                 image: AssetImage('assets/grup.png'),
                 fit: BoxFit.cover,
@@ -225,7 +241,14 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GameWidget(game: MainRouterGame()),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF007AFF),
                 shape: RoundedRectangleBorder(
@@ -251,12 +274,9 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 52,
             child: OutlinedButton(
               onPressed: () async {
-
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const addSchedule(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const addSchedule()),
                 );
 
                 /// Refresh setelah create schedule
@@ -266,10 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF007AFF),
-                side: const BorderSide(
-                  color: Color(0xFF007AFF),
-                  width: 1.5,
-                ),
+                side: const BorderSide(color: Color(0xFF007AFF), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
